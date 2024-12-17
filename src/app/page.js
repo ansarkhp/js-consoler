@@ -1,95 +1,98 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+import React, { useState } from "react";
+import Editor from "@monaco-editor/react";
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [value, setValue] = useState(""); // Content of the editor
+  const [fileName, setFileName] = useState("newFile.js"); // Default file name
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+  // Handle file upload
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      setFileName(file.name); // Set uploaded file name
+      reader.onload = (e) => {
+        setValue(e.target.result); // Set file content in the editor
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  // Save file with the current file name
+  const handleSave = () => {
+    saveFile(value, fileName);
+  };
+
+  // Save file with a new name (Save As)
+  const handleSaveAs = () => {
+    const newFileName = prompt("Enter new file name", fileName);
+    if (newFileName) {
+      setFileName(newFileName); // Update file name
+      saveFile(value, newFileName);
+    }
+  };
+
+  // Function to save the file
+  const saveFile = (content, name) => {
+    const blob = new Blob([content], { type: "text/javascript" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = name; // Set file name for download
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
+    // Run JavaScript code in the editor
+    const handleRunCode = () => {
+      try {
+        console.clear();
+        console.log("Running code...");
+        // Use eval to run the code
+        eval(value);
+      } catch (error) {
+        console.error("Error executing code:", error);
+      }
+    };
+
+  return (
+    <div style={{ padding: "1rem" }}>
+      {/* File Upload */}
+      <div style={{
+        display: 'flex',
+        justifyContent:"space-between",
+        alignItems:"baseline"
+      }}>
+        <div style={{ marginBottom: "1rem" }}>
+          <input
+            type="file"
+            accept=".js,.txt,.json"
+            onChange={handleFileUpload}
+          />
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* File Name Display */}
+        <div style={{ marginBottom: "1rem" }}>
+          <strong>Current File:</strong> {fileName}
+        </div>
+
+        {/* Save Buttons */}
+        <div style={{ marginBottom: "1rem" }}>
+          <button onClick={handleSave} style={{ marginRight: "1rem" }}>
+            Save
+          </button>
+          <button onClick={handleSaveAs}>Save As</button>
+        </div>
+        <button onClick={handleRunCode} style={{ background: "#28a745", color: "white" }} >Run</button>
+      </div>
+      {/* Monaco Editor */}
+      <Editor
+        height="90vh"
+        language="javascript"
+        theme="vs-dark"
+        value={value}
+        onChange={(newValue) => setValue(newValue)} // Update editor content
+      />
     </div>
   );
 }
