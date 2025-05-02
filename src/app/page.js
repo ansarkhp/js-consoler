@@ -3,14 +3,17 @@ import React, { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 
 export default function Home() {
-  const [value, setValue] = useState(() => {
-    return localStorage.getItem('js-consoler-code') || "";
-  });
-  const [fileName, setFileName] = useState(() => {
-    return localStorage.getItem('js-consoler-filename') || "newFile.js";
-  });
+  // Initialize with default values
+  const [value, setValue] = useState("");
+  const [fileName, setFileName] = useState("newFile.js");
+  
+  // Load localStorage values after component mounts
+  useEffect(() => {
+    setValue(localStorage.getItem('js-consoler-code') || "");
+    setFileName(localStorage.getItem('js-consoler-filename') || "newFile.js");
+  }, []);
 
-  // Add this effect to save code changes
+  // Save code changes to localStorage
   useEffect(() => {
     const saveTimer = setTimeout(() => {
       localStorage.setItem('js-consoler-code', value);
